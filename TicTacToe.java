@@ -57,11 +57,11 @@ public class TicTacToe {
 
                     if (checkWinner(board).equals(playerMark)) {
                         playerScore++;
-                        System.out.println("You win the game!");
+                        System.out.println("\nYou win the round!");
                         break;
 
                     } else if (isBoardFull(board)) {
-                        System.out.println("It's a tie!");
+                        System.out.println("\nIt's a tie!");
                         break;
                     }
 
@@ -69,12 +69,12 @@ public class TicTacToe {
                     displayBoard(board);
 
                     if (checkWinner(board).equals(computerMark)) {
-                        System.out.println("Computer wins the game!");
+                        System.out.println("\nComputer wins the round!");
                         computerScore++;
                         break;
 
                     } else if (isBoardFull(board)) {
-                        System.out.println("It's a tie!");
+                        System.out.println("\nIt's a tie!");
                         break;
                     }
 
@@ -88,6 +88,8 @@ public class TicTacToe {
             if (totalRounds == 3) {
                 determineWinner(playerScore, computerScore);
             }
+
+            System.out.println("Thank you for playing.");
 
         } catch (InputMismatchException e) {
             System.out.println("Invalid input");
@@ -104,7 +106,7 @@ public class TicTacToe {
         boolean isValid = false;
         int position = 0;
 
-        System.out.println("Your turn. Please enter a position between (1-9).");
+        System.out.println("\nYour turn. Please enter a position between (1-9).");
 
         while (!isValid) {
 
@@ -135,7 +137,7 @@ public class TicTacToe {
     //Computer Turn
     private static void computerTurn(String[][] board, String computerMark) {
 
-        System.out.println("\n--- Computer turn ---");
+        System.out.println("\nComputer turn");
         boolean isValid = false;
         int random = 0;
 
@@ -213,7 +215,7 @@ public class TicTacToe {
         System.out.println("Computer score: " + computerWins);
 
         if (playerWins > computerWins) {
-            System.out.println("Congratulations you win the game!");
+            System.out.println("Congratulations you are the winner!");
         } else if (computerWins > playerWins) {
             System.out.println("Computer wins the game!");
         } else {
