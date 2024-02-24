@@ -1,145 +1,160 @@
+import java.util.InputMismatchException;
 import java.util.Random;
 import java.util.Scanner;
 
 public class TicTacToe {
 
-
     public static void main(String[] args) {
 
+        playGame();
+
+    }
+
+    private static void playGame() {
+
         Scanner scanner = new Scanner(System.in);
+        int playerScore = 0;
+        int computerScore = 0;
+        int currentRound = 1;
+        int totalRounds;
+        String playerMark;
+        String computerMark;
 
-        String[][] board = {
-                {"1", "2", "3"},
-                {"4", "5", "6"},
-                {"7", "8", "9"},
-        };
-
-
-        //Start the game
-        System.out.println("Welcome to Tic-Tac-Toe! Let's start the game.");
-        displayBoard(board);
-        System.out.println("Would you like to play one round or three rounds? (1/3)");
-        int round = scanner.nextInt();
-        scanner.nextLine();
-
-        System.out.println("Please choose between 'X' or 'O': ");
-        String playerMark = scanner.nextLine();
-        validatePlayerMark(scanner, playerMark);
-        String computerMark = playerMark.equalsIgnoreCase("X") ? "O" : "X";
-
-
-        if (round == 1) {
-
-            while (true) {
-
-                //Player turn
-                playerTurn(board, playerMark, scanner);
-                displayBoard(board);
-                if (isGameFinished(board, playerMark, computerMark)) {
-                    break;
-                }
-
-                //Computer turn
-                computerTurn(board, computerMark);
-                displayBoard(board);
-                if (isGameFinished(board, playerMark, computerMark)) {
-                    break;
-                }
-
-
+        try {
+            System.out.println("Welcome to Tic-Tac-Toe! Let's start the game.");
+            System.out.println("Would you like to play one round or three rounds? (1 or 3).");
+            totalRounds = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+            while (totalRounds != 1 && totalRounds != 3) {
+                System.out.println("Invalid Input! Please enter 1 or 3: ");
+                totalRounds = scanner.nextInt();
+                scanner.nextLine();
             }
 
-        } else {
+            System.out.println("Please choose between 'X' or 'O': ");
+            playerMark = scanner.nextLine().toUpperCase();;
+            while (!playerMark.equals("X") && !playerMark.equals("O")) {
+                System.out.println("Invalid mark! Please choose between 'X' or 'O': ");
+                playerMark = scanner.nextLine().toUpperCase();
+            }
+            computerMark = playerMark.equals("X") ? "O" : "X";
 
-            int playerWins = 0;
-            int computerWins = 0;
-            int countRound = 1;
+            while (currentRound <= totalRounds) {
 
-
-            while (countRound <= 3) {
-
-                System.out.println("Round " + countRound);
-
-                board = new String[][]{
+                String[][] board = {
                         {"1", "2", "3"},
                         {"4", "5", "6"},
                         {"7", "8", "9"},
                 };
 
+                System.out.println("\n--- Round " + currentRound + " ---");
                 displayBoard(board);
-
 
                 while (true) {
 
-                    //Player turn
                     playerTurn(board, playerMark, scanner);
                     displayBoard(board);
+
                     if (checkWinner(board).equals(playerMark)) {
-                        playerWins++;
+                        playerScore++;
+                        System.out.println("You win the game!");
+                        break;
+
+                    } else if (isBoardFull(board)) {
+                        System.out.println("It's a tie!");
                         break;
                     }
 
-                    //Computer turn
                     computerTurn(board, computerMark);
                     displayBoard(board);
+
                     if (checkWinner(board).equals(computerMark)) {
-                        computerWins++;
+                        System.out.println("Computer wins the game!");
+                        computerScore++;
+                        break;
+
+                    } else if (isBoardFull(board)) {
+                        System.out.println("It's a tie!");
                         break;
                     }
 
                 }
 
-                countRound++;
+                currentRound++;
 
             }
 
-            //Determine winner
-            if (playerWins > computerWins) {
-                System.out.println("Congratulations you win the game!");
-
-            } else if (playerWins < computerWins) {
-                System.out.println("Computer wins the game!");
-
-            } else if (playerWins == 0 && computerWins == 0) {
-                System.out.println("No one win!");
-
+            //Determine the winner after all rounds
+            if (totalRounds == 3) {
+                determineWinner(playerScore, computerScore);
             }
 
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid input");
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
 
     }
 
-
+    //Player Turn
     private static void playerTurn(String[][] board, String playerMark, Scanner s) {
 
-        System.out.println("Your turn. Please enter a position between (1-9)");
-        String position = s.nextLine();
-        boolean isValid = isValidPosition(board, position);
+        boolean isValid = false;
+        int position = 0;
+
+        System.out.println("Your turn. Please enter a position between (1-9).");
 
         while (!isValid) {
-            System.out.println("Invalid position. Please try again");
-            position = s.nextLine();
-            isValid = isValidPosition(board, position);
+
+            position = s.nextInt();
+
+            if (position >= 1 && position <= 9) {
+
+                int row = (position - 1) / 3;
+                int col = (position - 1) % 3;
+
+                if (board[row][col].matches("\\d")) {
+                    isValid = true;
+
+                } else {
+                    System.out.println("Position is already taken! Please try again.");
+                }
+
+            } else {
+                System.out.println("Invalid position! Please enter a number between 1 and 9.");
+            }
+
         }
 
         updateBoard(board, position, playerMark);
 
     }
 
+    //Computer Turn
     private static void computerTurn(String[][] board, String computerMark) {
 
-        System.out.println("Computer turn");
-        String random = Integer.toString(generateRandomNumber());
-        boolean isValid = isValidPosition(board, random);
+        System.out.println("\n--- Computer turn ---");
+        boolean isValid = false;
+        int random = 0;
 
         while (!isValid) {
-            random = Integer.toString(generateRandomNumber());
-            isValid = isValidPosition(board, random);
+            random = generateRandomNumber();
+
+            int row = (random - 1) / 3;
+            int col = (random - 1) % 3;
+
+            if (board[row][col].matches("\\d")) {
+                isValid = true;
+            }
+
         }
 
         updateBoard(board, random, computerMark);
     }
 
+    //Generate random number for computer's move
     private static int generateRandomNumber() {
 
         Random random = new Random();
@@ -147,100 +162,8 @@ public class TicTacToe {
 
     }
 
-    private static boolean isValidPosition(String[][] board, String position) {
-
-        switch (position) {
-
-            case "1":
-                return board[0][0].equals("1");
-
-            case "2":
-                return board[0][1].equals("2");
-
-            case "3":
-                return board[0][2].equals("3");
-
-            case "4":
-                return board[1][0].equals("4");
-
-            case "5":
-                return board[1][1].equals("5");
-
-            case "6":
-                return board[1][2].equals("6");
-
-            case "7":
-                return board[2][0].equals("7");
-
-            case "8":
-                return board[2][1].equals("8");
-
-            case "9":
-                return board[2][2].equals("9");
-
-            default:
-                return false;
-        }
-
-    }
-
-    private static void validatePlayerMark(Scanner s, String playerMark) {
-
-        while (!playerMark.equalsIgnoreCase("X") && !playerMark.equalsIgnoreCase("O")) {
-            System.out.println("Invalid mark. Please choose between 'X' or 'O':");
-            playerMark = s.nextLine();
-        }
-
-    }
-
-
-    private static void displayBoard(String[][] board) {
-
-        System.out.println("+---+---+---+");
-        System.out.printf("| %s | %s | %s |%n", board[0][0], board[0][1], board[0][2]);
-        System.out.println("+---+---+---+");
-        System.out.printf("| %s | %s | %s |%n", board[1][0], board[1][1], board[1][2]);
-        System.out.println("+---+---+---+");
-        System.out.printf("| %s | %s | %s |%n", board[2][0], board[2][1], board[2][2]);
-        System.out.println("+---+---+---+");
-
-    }
-
-    private static void updateBoard(String[][] board, String position, String mark) {
-
-        int pos = Integer.parseInt(position);
-
-        int row = (pos - 1) / 3;
-        int col = (pos - 1) % 3;
-
-        board[row][col] = mark;
-
-    }
-
-    private static boolean isGameFinished(String[][] board, String playerMark, String computerMark) {
-
-        String winner = checkWinner(board);
-
-        if (winner.equalsIgnoreCase(playerMark)) {
-            System.out.println("Congratulations you win the game!");
-            return true;
-
-        } else if (winner.equalsIgnoreCase(computerMark)) {
-            System.out.println("Computer wins the game!");
-            return true;
-
-        } else if (winner.equals("draw")) {
-            System.out.println("The game ended in a tie!");
-            return true;
-
-        }
-
-        return false;
-    }
-
+    //Check if there's a winner
     private static String checkWinner(String[][] board) {
-
-        int draw = 0;
 
         String[] lines = {
                 board[0][0] + board[0][1] + board[0][2],
@@ -253,33 +176,86 @@ public class TicTacToe {
                 board[0][2] + board[1][1] + board[2][0]
         };
 
-
         for (String line : lines) {
 
             if (line.equalsIgnoreCase("XXX")) {
-
                 return "X";
             }
 
             if (line.equalsIgnoreCase("OOO")) {
-
                 return "O";
             }
 
-            if (!line.matches(".*\\d.*")) {
-                draw++;
-            }
-
-        }
-
-        if (draw == 8) {
-            return "draw";
         }
 
         return " ";
 
     }
 
+    //Check if the board is full
+    private static boolean isBoardFull(String[][] board) {
 
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board[i][j].matches("\\d")) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    //Determine the winner after all rounds
+    private static void determineWinner(int playerWins, int computerWins) {
+
+        System.out.println("\n--- Final winner ---");
+        System.out.println("Your score: " + playerWins);
+        System.out.println("Computer score: " + computerWins);
+
+        if (playerWins > computerWins) {
+            System.out.println("Congratulations you win the game!");
+        } else if (computerWins > playerWins) {
+            System.out.println("Computer wins the game!");
+        } else {
+            System.out.println("It's a tie!");
+        }
+
+    }
+
+    //Update the board after a move
+    private static void updateBoard(String[][] board, int position, String mark) {
+
+        int row = (position - 1) / 3;
+        int col = (position - 1) % 3;
+
+        board[row][col] = mark;
+
+    }
+
+    //Display board
+    private static void displayBoard(String[][] board) {
+
+        System.out.println("+---+---+---+");
+        System.out.printf("| %s | %s | %s |%n", colorize(board[0][0]), colorize(board[0][1]), colorize(board[0][2]));
+        System.out.println("+---+---+---+");
+        System.out.printf("| %s | %s | %s |%n", colorize(board[1][0]), colorize(board[1][1]), colorize(board[1][2]));
+        System.out.println("+---+---+---+");
+        System.out.printf("| %s | %s | %s |%n", colorize(board[2][0]), colorize(board[2][1]), colorize(board[2][2]));
+        System.out.println("+---+---+---+");
+
+    }
+
+    //Add colors to X and O marks
+    private static String colorize(String str) {
+
+        if (str.equalsIgnoreCase("X")) {
+            return "\u001B[31mX\u001B[0m";
+
+        } else if (str.equalsIgnoreCase("O")) {
+            return "\u001B[34mO\u001B[0m";
+
+        } else {
+            return str;
+        }
+    }
 }
-
